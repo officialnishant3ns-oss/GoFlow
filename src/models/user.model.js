@@ -1,0 +1,57 @@
+import mongoose from "mongoose"
+
+const userschema = new mongoose.Schema({
+    username: {
+        type: String,
+        required: [true, "Username is required"],
+        unique: true,
+        lowercase: true,
+        trim: true,
+        index: true
+    },
+    email: {
+        type: String,
+        required: true,
+        unique: true,
+        lowercase: true,
+        trim: true,
+    },
+    fullname: {
+        type: String,
+        required: true,
+        trim: true,
+        index: true
+    },
+    password: {
+        type: String,
+        required: [true, 'password is requred']
+    },
+    profileimage: {
+        type: String,
+        required: true
+    },
+    refresstoken: {
+        type: String
+    },
+    otp: {
+        type: String
+    },
+    otpexpiry: {
+        type: String
+    }
+},
+    {
+        timestamps: true
+    })
+
+    userschema.pre("save", async function (next) {
+    if (!this.isModified("password")) return next()
+    this.password =await bcrypt.hash(this.password, 10)
+    next()
+})
+
+userschema.methods.ispassword = async(req,res)=>{
+    return await bcrypt.compare(password,this.password)
+}
+const User = mongoose.model('User', userschema)
+export default User

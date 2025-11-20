@@ -1,18 +1,15 @@
 console.log("GoFlow...........")
+import app from '../src/app.js'
 
-import express from 'express'
 import dotenv from "dotenv"
 dotenv.config({
     path: './.env'
 })
 import connectDatabase from './db/db.js'
-const app = express()
-
-
 
 connectDatabase()
     .then(() => {
-        console.log("Database connected")
+      
         app.listen(process.env.PORT || 6001, () => {
             console.log(`server is ready at ${process.env.PORT}`);
         })
