@@ -1,5 +1,5 @@
 import mongoose from "mongoose"
-
+import bcrypt from 'bcrypt'
 const userschema = new mongoose.Schema({
     username: {
         type: String,
@@ -38,6 +38,10 @@ const userschema = new mongoose.Schema({
     },
     otpexpiry: {
         type: String
+    },
+    isVerified: {
+        type: Boolean,
+        default: false
     }
 },
     {
@@ -53,5 +57,7 @@ userschema.pre("save", async function (next) {
 userschema.methods.ispassword = async (req, res) => {
     return await bcrypt.compare(password, this.password)
 }
+
+//todo for jwt 
 const User = mongoose.model('User', userschema)
 export default User
