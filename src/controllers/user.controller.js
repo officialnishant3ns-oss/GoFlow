@@ -35,6 +35,7 @@ const register = asynchandler(async (req, res) => {
     })
 
     await sendOtpEmail(user.email, otp)
+
     const createduser = await User.findById(user._id).select(
         "-password -refresstoken"
     )
@@ -45,8 +46,6 @@ const register = asynchandler(async (req, res) => {
     return res.status(201).json(
         new apiresponse(200, createduser, "User registered successfully")
     )
-
-
 })
 
 export { register }
