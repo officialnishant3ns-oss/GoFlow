@@ -8,3 +8,5 @@ const asynchandler = (fn) => async (req, res, next) => {
         })
     }
 }
+
+export default asynchandler
