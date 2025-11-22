@@ -41,7 +41,7 @@ const register = asynchandler(async (req, res) => {
     await sendOtpEmail(user.email, otp)
 
     const createduser = await User.findById(user._id).select(
-        "-password -refresstoken"
+        "-password -refresstoken -otp -otpexpiry"
     )
     if (!createduser) {
         throw new apierror(500, "something went wrong while registering the user")
@@ -52,4 +52,35 @@ const register = asynchandler(async (req, res) => {
     )
 })
 
-export { register }
+const verifyotp = asynchandler(async (req, res) => {
+    const { email, otp } = req.body
+
+    if (!email || !otp) {
+        throw new apierror(400, "Something is mising from email or otp")
+    }
+    const user = await User.findOne({ email })
+    if (!user) {
+        throw new apierror(404, "User not found")
+    }
+    if (user.otpexpiry && user.otpexpiry < Date.now()) {
+        throw new apierror(400, "Your otp is Expired")
+    }
+    if (user.otp !== otp) {
+        throw new apierror(400, "YOur otp is Wrong")
+    }
+    user.isVerified = true
+    user.otp = undefined
+    user.otpexpiry = undefined
+    
+    await user.save()
+
+    return res.status(200).json(
+        new apiresponse(200, { success: true }, "User verified successfully")
+    );
+
+})
+
+
+
+
+export { register, verifyotp }
