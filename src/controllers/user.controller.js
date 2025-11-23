@@ -8,7 +8,19 @@ import User from '../models/user.models.js'
 
 
 
+const accessandrefreshtokengenerate = async (userId) => {
+    try {
+        const user = await User.findOne(userId)
+        const refreshtoken = await user.generateRefreshToken()
+        const accesstoken = await user.generateAccessToken()
 
+        user.refresstoken = refreshtoken
+        await user.save({ validateBeforeSave: true })
+        return { accesstoken, refreshtoken }
+    } catch (error) {
+        throw new apierror(500, "something went wrong while generating user")
+    }
+}
 const register = asynchandler(async (req, res) => {
     const { username, email, fullname, password } = req.body
     if ([username, email, fullname, password].some((field) =>
@@ -82,6 +94,37 @@ const verifyotp = asynchandler(async (req, res) => {
     );
 
 })
+const login = asynchandler(async (req, res) => {
+    const { email, password } = req.body
 
+    const user = await User.findOne({ email })
+    if (!user) {
+        throw new apierror(404, "User not found")
+    }
+
+    const validpassword = await user.isPassword(password)
+    if (!validpassword) {
+        throw new apierror(401, "Password not correct there")
+    }
+    const { refreshtoken, accesstoken } = await accessandrefreshtokengenerate(user._id)
+
+    const loggegInUser = await User.findById(user._id).select(
+        "-password -refresstoken"
+    )
+    const options = {
+        httpOnly: true,
+        secure: true
+    }
+
+    return res.status(200)
+        .cookie("accesstoken", accesstoken, options)
+        .cookie("refreshtoken", refreshtoken, options)
+        .json(
+            new apiresponse(
+                200,
+                { user: loggegInUser, accesstoken, refreshtoken },
+                "login successfull")
+        )
+})
 
 export { register, verifyotp }
