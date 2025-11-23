@@ -126,5 +126,23 @@ const login = asynchandler(async (req, res) => {
                 "login successfull")
         )
 })
+const logout = asynchandler(async (req, res) => {
+    User.findByIdAndUpdate(req.user_id,
+        {
+            $set: { refresstoken: undefined }
+        },
+        {
+            new: true
+        }
+    )
+    const option = {
+        httpOnly: true,
+        secure: true
+    }
+    return res.status(200).clearCookie("accesstoken", option)
+        .clearCookie("refreshtoken", option).json(
+            new apiresponse(200, {}, "User logged out")
+        )
+})
 
-export { register, verifyotp }
+export { register, verifyotp, login, logout }
