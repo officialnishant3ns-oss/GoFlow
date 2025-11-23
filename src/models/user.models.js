@@ -57,7 +57,30 @@ userschema.pre("save", async function (next) {
 userschema.methods.ispassword = async (req, res) => {
     return await bcrypt.compare(password, this.password)
 }
+userschema.methods.generateAccessToken = function () {
+    return jwt.sign(
+        {
+            _id: this._id,
+            email: this.email,
+            username: this.username,
+            fullname: this.fullname,
+        },
+        process.env.ACCESS_TOKEN_SECRET,
+        {
+            expiresIn: process.env.ACCESS_TOKEN_EXPIRY,
+        }
+    )
+}
+userschema.methods.generateRefreshToken = function () {
+    return jwt.sign({
+        _id: this._id
+    },
+        process.env.REFRESH_TOKEN_SECRET,
+        {
+            expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
+        }
+    )
+}
 
-//todo for jwt 
 const User = mongoose.model('User', userschema)
 export default User

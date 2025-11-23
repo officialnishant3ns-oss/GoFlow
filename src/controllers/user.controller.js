@@ -2,9 +2,12 @@ import asynchandler from '../utils/asynchandler.js'
 import apierror from '../utils/apierror.js'
 import apiresponse from '../utils/apiresponse.js'
 import uploadonclodinary from '../utils/cloudinary.js'
-import sendOtpEmail from '../utils/email_otp.js'
+import sendOtpEmail from '../config/email_otp.js'
 
 import User from '../models/user.models.js'
+
+
+
 
 const register = asynchandler(async (req, res) => {
     const { username, email, fullname, password } = req.body
@@ -71,7 +74,7 @@ const verifyotp = asynchandler(async (req, res) => {
     user.isVerified = true
     user.otp = undefined
     user.otpexpiry = undefined
-    
+
     await user.save()
 
     return res.status(200).json(
@@ -79,8 +82,6 @@ const verifyotp = asynchandler(async (req, res) => {
     );
 
 })
-
-
 
 
 export { register, verifyotp }
