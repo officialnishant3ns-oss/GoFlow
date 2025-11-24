@@ -144,5 +144,26 @@ const logout = asynchandler(async (req, res) => {
             new apiresponse(200, {}, "User logged out")
         )
 })
+const updatePassword = asynchandler(async (req, res) => {
+    const { newpassword, oldpassword } = req.body
+    if (!newpassword || !oldpassword) {
+        throw new apierror(404, "Something is missing")
+    }
 
-export { register, verifyotp, login, logout }
+    const user = await User.findOne(req.user?._id)
+
+    const isPasswordcorrect = user.isPassword(oldpassword)
+    if (!isPasswordcorrect) {
+        throw new apierror(400, "invalid old password")
+    }
+
+    user.password = newpassword
+    await user.save({ validateBeforeSave: false })
+
+    return res.status(200).json(
+        new apiresponse(200, {}, "password change successfuly")
+    )
+
+
+})
+export { register, verifyotp, login, logout, updatePassword }
