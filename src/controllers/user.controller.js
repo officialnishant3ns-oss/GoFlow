@@ -166,4 +166,12 @@ const updatePassword = asynchandler(async (req, res) => {
 
 
 })
-export { register, verifyotp, login, logout, updatePassword }
+
+const getcurrentUser = asynchandler(async (req, res) => {
+    const user = req.user
+    return res.status(200).json(
+        200, user, "current user is fetched successfully"
+    )
+})
+
+export { register, verifyotp, login, logout, updatePassword,getcurrentUser }
