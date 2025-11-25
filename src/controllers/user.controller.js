@@ -170,8 +170,32 @@ const updatePassword = asynchandler(async (req, res) => {
 const getcurrentUser = asynchandler(async (req, res) => {
     const user = req.user
     return res.status(200).json(
-        200, user, "current user is fetched successfully"
+        200, "current user is fetched successfully", user
     )
 })
+const updateprofolepicture = asynchandler(async (req, res) => {
+    const profileimage = req.file?.path
+    if (!profileimage) {
+        throw new apierror(400, "profileimage files is missing")
+    }
 
-export { register, verifyotp, login, logout, updatePassword,getcurrentUser }
+    const profilephoto = await uploadonclodinary(profileimage)
+    if (!profilephoto.url) {
+        throw new apierror(400, "Error while uploading ")
+    }
+
+    const user =await User.findById(req.user?._id,
+        {
+            $set: {
+                profileimage: profilephoto.url
+            }
+        },
+        { new: true }
+    ).select("-password")
+
+    return res.status(200).json(
+        new apiresponse(200, "profileimage updated successfully", user)
+    )
+}
+)
+export { register, verifyotp, login, logout, updatePassword, getcurrentUser, updateprofolepicture }
