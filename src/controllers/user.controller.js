@@ -184,7 +184,7 @@ const updateprofolepicture = asynchandler(async (req, res) => {
         throw new apierror(400, "Error while uploading ")
     }
 
-    const user =await User.findById(req.user?._id,
+    const user =await User.findByIdAndUpdate(req.user?._id,
         {
             $set: {
                 profileimage: profilephoto.url
