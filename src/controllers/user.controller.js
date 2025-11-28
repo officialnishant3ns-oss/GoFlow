@@ -66,7 +66,6 @@ const register = asynchandler(async (req, res) => {
         new apiresponse(200, createduser, "User registered successfully")
     )
 })
-
 const verifyotp = asynchandler(async (req, res) => {
     const { email, otp } = req.body
 
@@ -166,7 +165,6 @@ const updatePassword = asynchandler(async (req, res) => {
 
 
 })
-
 const getcurrentUser = asynchandler(async (req, res) => {
     const user = req.user
     return res.status(200).json(
@@ -184,7 +182,7 @@ const updateprofolepicture = asynchandler(async (req, res) => {
         throw new apierror(400, "Error while uploading ")
     }
 
-    const user =await User.findByIdAndUpdate(req.user?._id,
+    const user = await User.findByIdAndUpdate(req.user?._id,
         {
             $set: {
                 profileimage: profilephoto.url
@@ -198,4 +196,42 @@ const updateprofolepicture = asynchandler(async (req, res) => {
     )
 }
 )
-export { register, verifyotp, login, logout, updatePassword, getcurrentUser, updateprofolepicture }
+const AccesstokenRefreshtoken = asynchandler(async (req, res) => {
+    try {
+
+        const incomingrefeshtoken = req.cookie.refreshtoken || req.body.refreshtoken
+        if (!incomingrefeshtoken) {
+            throw new apierror(401, "Unauthorised request")
+        }
+        const decodedtoken = jwt.verify(
+            incomingrefeshtoken, process.env.REFRESH_TOKEN_SECRET
+        )
+        const user = await User.findById(decodedtoken?._id)
+        if (!user) {
+            throw new apierror(401, "invalid refresh token")
+        }
+
+        if (incomingrefeshtoken != user?.refreshtoken) {
+            throw new apierror(401, "invalid refresh expired token")
+        }
+
+        const { accesstoken, newrefreshtoken } = await accessandrefreshtokengenerate(user._id)
+
+        const option = {
+            httpOnly: true,
+            secure: true
+        }
+
+        return res.status(200).
+            cookie("accesstoken", accesstoken, option).
+            cookie("refreshtoken", newrefreshtoken, option).
+            json(
+                new apiresponse(200, { accesstoken, refreshtoken: newrefreshtoken }, "Access token refreshed there")
+            )
+    } catch (error) {
+        throw new apierror(401, "invalid refesh token")
+    }
+
+})
+
+export { register, verifyotp, login, logout, updatePassword, getcurrentUser, updateprofolepicture,AccesstokenRefreshtoken }
