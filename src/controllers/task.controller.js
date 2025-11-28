@@ -35,10 +35,18 @@ const updatetask = asynchandler(async (req, res) => {
     }
     let updatedData = { ...req.body }
 
-      await task.save();
+    console.log(updatedData)
+    const updatedtask = await Task.findOneAndUpdate(
+        { _id: TaskId },
+        { $set: updatedData },
+        { new: true, runValidators: true }
+    )
+    if (!updatedtask) {
+        throw new apierror(400, "Task not found or unauthorized");
+    }
 
     return res.status(200).json(
-        new apiresponse(200, task, "Task updated successfully")
+        new apiresponse(200, "Task updated successfully")
     )
 })
 export { CreateTask, updatetask }
